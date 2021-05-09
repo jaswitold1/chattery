@@ -14,10 +14,12 @@ import {
   useQuery,
   gql,
   createHttpLink,
+  useMutation,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 
 const ChatScreen = (route) => {
+  console.log(route.navigation.state.params.id);
   const httpLink = createHttpLink({
     uri: "https://chat.thewidlarzgroup.com/api/graphql",
   });
@@ -54,6 +56,13 @@ const ChatScreen = (route) => {
       }
     }
   `;
+  const SEND_MESSAGES = gql`
+    mutation($body: String!) {
+      sendMessage(body: $body, roomId: "${route.navigation.state.params.id}") {
+        body
+      }
+    }
+  `;
   const Messages = () => {
     const { data } = useQuery(GET_MESSAGES);
 
@@ -80,13 +89,16 @@ const ChatScreen = (route) => {
   ////// wysylanie
   const MessageInput = () => {
     const [message, setMessage] = useState({});
+    const [sendMessage] = useMutation(SEND_MESSAGES);
     console.log(message);
     const handleInput = (text) => {
       setMessage(text);
     };
     const handleSend = () => {
-      if (message.length > 0) {
-      }
+      if (message.length > 0)
+        sendMessage({
+          variables: { body: message },
+        });
       setMessage({});
     };
     return (
